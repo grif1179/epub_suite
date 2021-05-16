@@ -1,3 +1,9 @@
 archive/*
 epubTester.epub
 scp_to_kindle/*
+env/*
+*__BY__*/*
+*.epub
+test_server.py
+static/*
+__pycache__/*
