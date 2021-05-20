@@ -86,8 +86,14 @@ def write_epub(dir_name):
 
 def generate_epub(url, book, author):
     print(f"Generating {book} by {author}")
+
+    # Get base url
+    # TODO - Use regex to get base
     last_slash = (len(url)-1) - url[::-1].find('/')
     base_url = url[:last_slash]
+
+    # Create the folder that the epub files
+    #   will be saved to.
     dir_name = '_'.join(book.split(' ')) + '__BY__' + '_'.join(author.split(' '))
     dir_path = os.path.join('./', dir_name)
     if os.path.exists(dir_path):
@@ -95,9 +101,16 @@ def generate_epub(url, book, author):
     os.mkdir(dir_name)
     os.mkdir(os.path.join(dir_name, 'META-INF'))
 
+    # Dictionary where the key is the original
+    #   link and the key is the new file name.
     linkToFile = {}
-    uniqueLinks = []
+
+    # List of page objects representing
+    #   the chapters of the epub file.
     pages = []
+
+    # Retrieve table of contents page
+    #   and extract urls to be used as chapters.
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
     anchors = soup.find_all('a')
@@ -106,14 +119,17 @@ def generate_epub(url, book, author):
         if link is None:
             continue
 
-        # Remove hash
+        # Remove hash from link if present
         hashLoc = link.find('#')
         if hashLoc != -1:
             link = link[:hashLoc]
 
+        # Create a page object and then use
+        #   the object to generate an html file
+        #   that will represent a chapter in the
+        #   final epub file.
         if link not in linkToFile:
             linkToFile[link] = createFileFromLink(link)
-            uniqueLinks.append(link)
             filepath = os.path.join(dir_path, linkToFile[link])
             pageId = link[:link.find('.')]
             fullLink = f"{base_url}/{link}"
@@ -124,6 +140,7 @@ def generate_epub(url, book, author):
                 lines = createChapter(fullLink)
                 f.write(str(lines))
 
+    # Generate required files for an epub
     # mimetype
     mimetype = 'mimetype'
     env.get_template(mimetype).stream().dump(
@@ -150,7 +167,7 @@ def generate_epub(url, book, author):
 
     write_epub(dir_path)
 
-    print('Generated files')
+    print(f"Generated epub: {dir_name}.epub")
 
 
 def createFileFromLink(link):
