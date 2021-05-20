@@ -1,4 +1,5 @@
 archive/*
+epubTester/*
 epubTester.epub
 scp_to_kindle/*
 env/*
