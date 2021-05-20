@@ -8,6 +8,7 @@ import sys
 import os
 import shutil
 import uuid
+import textwrap
 
 env = Environment(
     loader=FileSystemLoader('templates'),
@@ -28,14 +29,26 @@ class Page:
 
 
 def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("mode", help="What to do to EPUB file given")
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument("mode", choices=['r', 'w', 'g'],
+                        help=textwrap.dedent('''\
+                             What to do to EPUB file given.
+                             r -> Print the structure of the epub file.
+                             w -> Create an epub file from a folder.
+                             g -> Given the url to a table of contents
+                                   page uses the links on the page to
+                                   generate an epub.'''))
     parser.add_argument("location", help="Name of EPUB file or directory")
     parser.add_argument('-b', '--book', nargs='?', default='Unknown',
                         help='Name of book used in generation')
     parser.add_argument('-a', '--author', nargs='?', default='Unknown',
                         help='Name of author used in generation')
     args = parser.parse_args()
+
+    if args.mode == 'g':
+        print("--book and --author must be set if 'g' mode is used.")
+        sys.exit(1)
 
     return args.mode, args.location, args.book, args.author
 
